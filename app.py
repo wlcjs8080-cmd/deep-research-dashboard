@@ -1753,6 +1753,25 @@ def main():
 
     # ── 분석 실행 ──────────────────────────────────────────────
     if analyze_btn and ticker_input:
+                # ── 티커 유효성 검증 (강화) ──────────────────────────
+        # 1) 영문+숫자+점만 허용 (한글, 특수문자 차단)
+        if not re.match(r'^[A-Z0-9.\-]{1,10}$', ticker_input):
+            st.error(f"❌ '{ticker_input}'은(는) 유효하지 않은 티커입니다. 영문 티커를 입력하세요. (예: AAPL, MSFT, NVDA)")
+            st.stop()
+
+        # 2) yfinance에서 실제 데이터 존재 여부 확인
+        try:
+            _test = yf.Ticker(ticker_input)
+            _test_info = _test.info
+            _test_price = _test_info.get("currentPrice") or _test_info.get("regularMarketPrice")
+            _test_mc = _test_info.get("marketCap")
+            _test_name = _test_info.get("shortName") or _test_info.get("longName")
+            if not _test_price and not _test_mc:
+                st.error(f"❌ '{ticker_input}'에 대한 시장 데이터가 없습니다. 미국 주식 티커를 입력하세요. (예: AAPL, MSFT, NVDA)")
+                st.stop()
+        except Exception:
+            st.error(f"❌ '{ticker_input}'을(를) 찾을 수 없습니다. 티커를 확인해주세요.")
+
         # 상태 초기화
         for k in ["analysis_complete", "analysis_result", "saved_to_db"]:
             st.session_state[k] = False if k != "analysis_result" else None
