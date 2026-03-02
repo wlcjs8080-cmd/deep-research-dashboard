@@ -80,38 +80,51 @@ Supabase 저장(예정)과 JSON 다운로드를 지원한다.
 ├── .cursor/
 │   └── rules/
 │       ├── project-context/
-│       │   └── RULE.md          ← 이 파일
+│       │   └── RULE.md
 │       ├── coding-standards/
-│       │   └── RULE.md          ← 코딩 규칙
+│       │   └── RULE.md
 │       └── workflow/
-│           └── RULE.md          ← 작업 흐름 규칙
+│           └── RULE.md
 ├── .streamlit/
 │   └── secrets.toml             ← API 키 (절대 공개 금지)
-├── app.py                       ← 메인 코드 (단일 파일, 모든 로직 포함)
-├── requirements.txt             ← 패키지 목록
-├── CONTEXT.md                   ← 기존 맥락 문서 (레거시, 이 파일로 이전됨)
-├── .gitignore                   ← secrets.toml 제외 설정
+├── app.py                       ← 메인 실행 로직 (465줄)
+├── data_collectors.py           ← 데이터 수집: yfinance, FMP, 뉴스 (286줄)
+├── llm_pipeline.py              ← LLM 프롬프트 + 호출 + 후처리 (395줄)
+├── ui_renderers.py              ← UI 렌더링 함수 전체 (709줄)
+├── utils.py                     ← 헬퍼: fmt_num, safe_pct, safe_float 등 (65줄)
+├── requirements.txt
+├── CONTEXT.md                   ← 레거시 (RULE.md로 이전됨)
+├── .gitignore
 └── README.md
 
-## app.py 주요 함수 목록
-- collect_yfinance_data(): yfinance 전체 데이터 수집 파이프라인
-- collect_fmp_earnings_transcript(): FMP 어닝콜 트랜스크립트 + 어닝 서프라이즈 수집
-- collect_news(): Yahoo Finance RSS 뉴스 헤드라인 수집 (최대 20건)
-- get_peer_data(): 섹터 기반 동종 기업 최대 3곳 데이터 수집
-- prepare_data_context(): LLM에 주입할 데이터 컨텍스트 문자열 생성
-- run_llm_analysis(): 12단계 LLM 분석 실행 → JSON Dict 반환
-- save_to_supabase(): Supabase에 리포트 저장
-- load_past_reports(): 과거 리포트 목록 조회
-- render_top_summary(): 최상단 최종 의견 요약
-- render_price_chart(): 캔들스틱 주가 차트 + 거래량 + MA선
-- render_financial_cards(): 핵심 재무 지표 카드
-- render_institutional_insider(): 기관 보유 + 내부자 거래
-- render_peer_table(): 동종 기업 비교 테이블
-- render_options_summary(): 옵션 IV vs 실현변동성 분석
-- render_news(): 뉴스 헤드라인
-- render_analysis_item(): 단일 분석 항목 렌더링
-- render_alpha_matrix(): 알파 소스 종합 매트릭스
-- render_final_opinion_box(): 최종 투자 의견 박스
+## 파일별 주요 함수 목록
+
+### app.py (메인 실행)
+- 비밀번호 체크, 사이드바, 티커 입력
+- 분석 실행 흐름 (버튼 → 수집 → LLM → 렌더링)
+- save_to_supabase(), load_past_reports()
+- CSS <style> 블록, ITEM_TITLE_MAP
+
+### data_collectors.py (데이터 수집)
+- collect_yfinance_data(): yfinance 전체 데이터 수집
+- get_peer_data(): 동종 기업 데이터 수집
+- collect_fmp_earnings_transcript(): FMP 어닝콜 + 서프라이즈
+- collect_news(): Yahoo RSS 뉴스 수집
+
+### llm_pipeline.py (LLM 분석)
+- _SYSTEM_PROMPT: 시스템 프롬프트 상수
+- prepare_data_context(): LLM 데이터 컨텍스트 생성
+- run_llm_analysis(): LLM 호출 + JSON 파싱
+
+### ui_renderers.py (UI 렌더링)
+- render_top_summary(), render_price_chart()
+- render_financial_cards(), render_institutional_insider()
+- render_peer_table(), render_options_summary()
+- render_news(), render_analysis_item()
+- render_alpha_matrix(), render_final_opinion_box()
+
+### utils.py (유틸리티)
+- fmt_num(), safe_pct(), safe_float(), df_safe(), serialize_obj()
 
 
 # 세션 히스토리
@@ -193,6 +206,7 @@ Supabase 저장(예정)과 JSON 다운로드를 지원한다.
 - FMP API 키 설정 완료
 - 품질 검증 결과: Forward P/E 오류, 가이던스 미확인, 동종업체 선정 오류, 주가 반응 수치 왜곡
 - RULE.md 3개 최신화 작업 시작
+- app.py 파일 분리 완료: app.py(465) + data_collectors.py(286) + llm_pipeline.py(395) + ui_renderers.py(709) + utils.py(65)
 
 
 # 현재 상태
